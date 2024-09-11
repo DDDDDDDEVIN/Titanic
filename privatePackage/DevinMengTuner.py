@@ -11,6 +11,7 @@ class DevinMengTuner:
     CP_TUNED_COMBO_PATH = 'tuned_comb.json'
     CP_BEST_COMBO_PATH = 'best_combo.json'
     CP_BEST_METRICS_PATH = 'best_metrics.json'
+    CP_BEST_MODEL_PATH = 'best_model.pkl'
     def __init__(self):
         '''initialise object'''
         self.model = None
@@ -198,6 +199,8 @@ class DevinMengTuner:
         elif curr_accuracy > self.best_metrics_dict['Accuracy']:
             self.best_metrics_dict = self.curr_metrics_dict.copy()
             self.best_param_dict = self.curr_param_dict.copy()
+            with open(self.CP_BEST_MODEL_PATH, 'wb') as file:
+                pickle.dump(self.model, file)
         self._print_evaluation()
         with open(self.CP_BEST_COMBO_PATH, 'w') as file:
             json.dump(self.best_param_dict, file)
