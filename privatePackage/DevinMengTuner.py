@@ -3,19 +3,20 @@ import numpy as np
 import pickle 
 import itertools
 import json
+import os
+import shutil
+import copy
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score, accuracy_score, r2_score, mean_squared_error
 
 class DevinMengTuner:
-    CP_TUNED_COMBO_PATH = 'tuned_comb.json'
-    CP_BEST_COMBO_PATH = 'best_combo.json'
-    CP_BEST_METRICS_PATH = 'best_metrics.json'
-    CP_BEST_MODEL_PATH = 'best_model.pkl'
+    
     def __init__(self):
         '''initialise object'''
         self.model = None
         self.model_type = None
+        self.model_name = None
         self.tunable_parameters_dict = {}
         self.non_tunable_parameters_dict = {}
         self.tuner_type = 'Grid'
@@ -30,7 +31,11 @@ class DevinMengTuner:
         self.curr_param_dict = {}
         self.best_param_dict = {}
         self.CP_tuned_combination_list = []
-        
+        self.cp_tuned_combo_path = 'tuned_comb.json'
+        self.cp_best_combo_path = 'best_combo.json'
+        self.cp_best_metrics_path = 'best_metrics.json'
+        self.cp_tuned_count_path = 'tuned_count.txt'
+        self.best_model = None
         print("DevinMengTuner initialised")
 
 
@@ -39,8 +44,10 @@ class DevinMengTuner:
         if model_type != 'Regression' and model_type != 'Classification':
             raise ValueError("model_type must be Regression or Classification, please try again")
         
-        self.model = model
+        self.model = copy.deepcopy(model)
         self.model_type = model_type
+        self.model_name = str(model)
+        self._make_dir()
 
 
     def set_parameters(self, tunable_parameters_dict, non_tunable_parameters):
@@ -94,24 +101,7 @@ class DevinMengTuner:
         if self.test_Y is None or self.test_Y.empty:
             raise ValueError("test_Y is not set, please set_data")
         
-        # check if there is checkpoint exist
-        try:
-            with open(self.CP_TUNED_COMBO_PATH, 'r') as file:
-                self.CP_tuned_combination_list = json.load(file)
-        except (FileNotFoundError, json.JSONDecodeError):
-            self.CP_tuned_combination_list = []
-
-        try:
-            with open(self.CP_BEST_COMBO_PATH, 'r') as file:
-                self.best_param_dict = json.load(file)
-        except (FileNotFoundError, json.JSONDecodeError):
-            pass
-
-        try:
-            with open(self.CP_BEST_METRICS_PATH, 'r') as file:
-                self.best_metrics_dict = json.load(file)
-        except (FileNotFoundError, json.JSONDecodeError):
-            pass
+        self._check_checkpoint()
         
         if self.tuner_type == 'Grid':
             self._grid_tune()
@@ -136,7 +126,7 @@ class DevinMengTuner:
                 if checkpoint_param == list(curr_param):
                     checkpoint_found = 1
             if checkpoint_found:
-                break
+                continue
 
             # create a dictionary for current parameter-value pairs
             index = 0
@@ -160,9 +150,12 @@ class DevinMengTuner:
             print('----------------------------')
             # save checkpoint
             self.CP_tuned_combination_list.append(curr_param)
-            with open(self.CP_TUNED_COMBO_PATH, 'w') as file:
+            with open(self.cp_tuned_combo_path, 'w') as file:
                 json.dump(self.CP_tuned_combination_list, file)
+            with open(self.cp_tuned_count_path, 'w') as file:
+                file.write(str(self.tuned_combination_num))
         self._print_best_combination()
+        self._clear_cache()
         
 
 
@@ -199,12 +192,11 @@ class DevinMengTuner:
         elif curr_accuracy > self.best_metrics_dict['Accuracy']:
             self.best_metrics_dict = self.curr_metrics_dict.copy()
             self.best_param_dict = self.curr_param_dict.copy()
-            with open(self.CP_BEST_MODEL_PATH, 'wb') as file:
-                pickle.dump(self.model, file)
+            self.best_model = self.model
         self._print_evaluation()
-        with open(self.CP_BEST_COMBO_PATH, 'w') as file:
+        with open(self.cp_best_combo_path, 'w') as file:
             json.dump(self.best_param_dict, file)
-        with open(self.CP_BEST_METRICS_PATH, 'w') as file:
+        with open(self.cp_best_metrics_path, 'w') as file:
             json.dump(self.best_metrics_dict, file)
 
     def _print_evaluation(self):
@@ -244,3 +236,54 @@ class DevinMengTuner:
 
     def _bayesian_tune(self):
         print('not done yet')
+
+    def _check_checkpoint(self):
+                # check if there is checkpoint exist
+        try:
+            with open(self.cp_tuned_combo_path, 'r') as file:
+                self.CP_tuned_combination_list = json.load(file)
+        except (FileNotFoundError, json.JSONDecodeError):
+            self.CP_tuned_combination_list = []
+
+        try:
+            with open(self.cp_best_combo_path, 'r') as file:
+                self.best_param_dict = json.load(file)
+        except (FileNotFoundError, json.JSONDecodeError):
+            pass
+
+        try:
+            with open(self.cp_best_metrics_path, 'r') as file:
+                self.best_metrics_dict = json.load(file)
+        except (FileNotFoundError, json.JSONDecodeError):
+            pass
+        
+        try:
+            with open(self.cp_tuned_count_path, 'r') as file:
+                self.tuned_combination_num = int(file.read())
+        except FileNotFoundError:
+            pass
+    def _make_dir(self):
+        try:
+            os.makedirs(self.model_name)
+        except FileExistsError:
+            print('dir already exist')
+        # change path of all files to corresponding directory
+        self.cp_tuned_combo_path = self.model_name + '/' + self.cp_tuned_combo_path
+        self.cp_best_combo_path = self.model_name + '/' + self.cp_best_combo_path
+        self.cp_best_metrics_path = self.model_name + '/' + self.cp_best_metrics_path
+        self.cp_tuned_count_path = self.model_name + '/' + self.cp_tuned_count_path
+
+    def _clear_cache(self):
+        try:
+            os.rmdir(self.model_name)
+        except OSError:
+            pass
+
+        try:
+            shutil.rmtree(self.model_name)
+        except (OSError, FileNotFoundError):
+            pass
+
+
+    def best_model_(self):
+        return self.best_model
