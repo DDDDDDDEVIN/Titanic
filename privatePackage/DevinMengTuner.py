@@ -39,6 +39,7 @@ class DevinMengTuner:
         print("DevinMengTuner initialised")
 
 
+
     def set_model(self, model, model_type):
         # check valid input
         if model_type != 'Regression' and model_type != 'Classification':
@@ -50,6 +51,7 @@ class DevinMengTuner:
         self._make_dir()
 
 
+
     def set_parameters(self, tunable_parameters_dict, non_tunable_parameters):
         # check valid input
         if not isinstance(tunable_parameters_dict, dict):
@@ -59,6 +61,7 @@ class DevinMengTuner:
         
         self.tunable_parameters_dict = tunable_parameters_dict
         self.non_tunable_parameters_dict = non_tunable_parameters
+
 
 
     def set_data(self, train_X, train_Y, test_X, test_Y):
@@ -75,6 +78,8 @@ class DevinMengTuner:
         self.train_Y = train_Y
         self.test_X = test_X
         self.test_Y = test_Y
+
+
 
     def  set_tuner(self, tuner_type):
         if tuner_type != 'Grid' and tuner_type != 'Random' and tuner_type != 'Bayesian':
@@ -119,7 +124,7 @@ class DevinMengTuner:
         self.total_combination_num = len(param_list)
         # looping through all combinatioons
         for curr_param in param_list:
-
+            
             # check if current param is in checkpoint list
             checkpoint_found = 0
             for checkpoint_param in self.CP_tuned_combination_list:
@@ -160,21 +165,26 @@ class DevinMengTuner:
 
 
     def _regression_metrics(self, pred_Y):
-        # calculate r2 and rmse
+        # calculate f1 and accuracy score
         curr_r2 = r2_score(y_true=self.test_Y, y_pred=pred_Y)
-        curr_rmse = mean_squared_error(y_true = self.test_Y, y_pred=pred_Y, squared=False)
+        curr_rmse = mean_squared_error(y_true=self.test_Y, y_pred=pred_Y, squared=False)
         # record metrics as a dictionary
         self.curr_metrics_dict['R-Squared'] = curr_r2
         self.curr_metrics_dict['Root Mean Squared Error'] = curr_rmse
         # check if at least one best metrics are recorded
         if not self.best_metrics_dict:
-            self.best_metrics_dict = self.curr_metrics_dict
-            self.best_param_dict = self.curr_param_dict
-            #check if current params perfroms better than best params
-        elif self.curr_metrics_dict['R-Squared'] > self.best_metrics_dict['R-Squared']:
-            self.best_metrics_dict = self.curr_metrics_dict
-            self.best_param_dict = self.curr_param_dict
+            self.best_metrics_dict = self.curr_metrics_dict.copy()
+            self.best_param_dict = self.curr_param_dict.copy()
+        # check if current params performs better than best params
+        elif curr_r2 > self.best_metrics_dict['R-Squared']:
+            self.best_metrics_dict = self.curr_metrics_dict.copy()
+            self.best_param_dict = self.curr_param_dict.copy()
+            self.best_model = self.model
         self._print_evaluation()
+        with open(self.cp_best_combo_path, 'w') as file:
+            json.dump(self.best_param_dict, file)
+        with open(self.cp_best_metrics_path, 'w') as file:
+            json.dump(self.best_metrics_dict, file)
 
 
     def _classification_metrics(self, pred_Y):
@@ -237,6 +247,8 @@ class DevinMengTuner:
     def _bayesian_tune(self):
         print('not done yet')
 
+
+
     def _check_checkpoint(self):
                 # check if there is checkpoint exist
         try:
@@ -262,6 +274,10 @@ class DevinMengTuner:
                 self.tuned_combination_num = int(file.read())
         except FileNotFoundError:
             pass
+
+
+
+
     def _make_dir(self):
         try:
             os.makedirs(self.model_name)
@@ -272,6 +288,8 @@ class DevinMengTuner:
         self.cp_best_combo_path = self.model_name + '/' + self.cp_best_combo_path
         self.cp_best_metrics_path = self.model_name + '/' + self.cp_best_metrics_path
         self.cp_tuned_count_path = self.model_name + '/' + self.cp_tuned_count_path
+
+
 
     def _clear_cache(self):
         try:
@@ -287,3 +305,4 @@ class DevinMengTuner:
 
     def best_model_(self):
         return self.best_model
+    
