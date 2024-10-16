@@ -15,6 +15,7 @@ class DevinMengTuner:
     def __init__(self):
         '''initialise object'''
         self.model = None
+        self.empty_model = None
         self.model_type = None
         self.model_name = None
         self.tunable_parameters_dict = {}
@@ -45,7 +46,7 @@ class DevinMengTuner:
         if model_type != 'Regression' and model_type != 'Classification':
             raise ValueError("model_type must be Regression or Classification, please try again")
         
-        self.model = copy.deepcopy(model)
+        self.empty_model = model
         self.model_type = model_type
         self.model_name = str(model)
         self._make_dir()
@@ -91,7 +92,7 @@ class DevinMengTuner:
 
     def tune(self):
         # check all attributes needed is set
-        if self.model is None:
+        if self.empty_model is None:
            raise ValueError("model is not set, please set_model")
         if self.model_type is None:
             raise ValueError("model_type is not set, please set_model")
@@ -118,13 +119,13 @@ class DevinMengTuner:
     def _grid_tune(self):
         # set non tunable parameters
         if self.non_tunable_parameters_dict:
-            self.model.set_params(**self.non_tunable_parameters_dict)
+            self.empty_model.set_params(**self.non_tunable_parameters_dict)
         # create a list for all possible parameters combinations
         param_list = list(itertools.product(*self.tunable_parameters_dict.values()))
         self.total_combination_num = len(param_list)
         # looping through all combinatioons
         for curr_param in param_list:
-            
+            self.model = copy.deepcopy(self.empty_model)
             # check if current param is in checkpoint list
             checkpoint_found = 0
             for checkpoint_param in self.CP_tuned_combination_list:
