@@ -1,0 +1,1 @@
+{"n_estimators": 25, "max_depth": 8, "subsample": 1, "colsample_bylevel": 0.85, "max_bin": 64, "reg_lambda": 0.1, "learning_rate": 0.1}
