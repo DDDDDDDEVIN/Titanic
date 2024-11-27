@@ -7,6 +7,7 @@ import os
 import shutil
 import copy
 
+from catboost import CatBoostClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score, accuracy_score, r2_score, mean_squared_error
 
@@ -48,6 +49,7 @@ class DevinMengTuner:
         
         self.empty_model = model
         self.model_type = model_type
+        # handle catboost model
         self.model_name = str(model)
         self._make_dir()
 
@@ -83,6 +85,7 @@ class DevinMengTuner:
 
 
     def  set_tuner(self, tuner_type):
+        # check valid tuner type input
         if tuner_type != 'Grid' and tuner_type != 'Random' and tuner_type != 'Bayesian':
             raise ValueError("input tunner_type must be Grid or Random or Bayesian, please try agian")
         
@@ -107,6 +110,7 @@ class DevinMengTuner:
         if self.test_Y is None or self.test_Y.empty:
             raise ValueError("test_Y is not set, please set_data")
         
+        # check if there is saved checkpoint that can be downloaded
         self._check_checkpoint()
         
         if self.tuner_type == 'Grid':
@@ -121,18 +125,23 @@ class DevinMengTuner:
         if self.non_tunable_parameters_dict:
             self.empty_model.set_params(**self.non_tunable_parameters_dict)
         # create a list for all possible parameters combinations
-        param_list = list(itertools.product(*self.tunable_parameters_dict.values()))
-        self.total_combination_num = len(param_list)
+        param_value_list = list(itertools.product(*self.tunable_parameters_dict.values()))
+        self.total_combination_num = len(param_value_list)
+
+
         # looping through all combinatioons
-        for curr_param in param_list:
+        for curr_param in param_value_list:
             self.model = copy.deepcopy(self.empty_model)
-            # check if current param is in checkpoint list
+
+
+            # check if current param is in checkpoint list, if it is in checkpoint list, then skip this param.
             checkpoint_found = 0
             for checkpoint_param in self.CP_tuned_combination_list:
                 if checkpoint_param == list(curr_param):
                     checkpoint_found = 1
             if checkpoint_found:
                 continue
+
 
             # create a dictionary for current parameter-value pairs
             index = 0
@@ -151,7 +160,7 @@ class DevinMengTuner:
                 self._classification_metrics(pred_Y)
             # count combinations tuned
             self.tuned_combination_num += 1
-            # calculate tuning pregress
+            # calculate tuning progress
             self._tuning_progress()
             print('----------------------------')
             # save checkpoint
