@@ -47,17 +47,16 @@ class DevinMengTuner:
         self.model = copy.deepcopy(model)
         self.model_type = model_type
         self.model_name = str(model)
-        self._make_dir()
 
 
-    def set_parameters(self, tunable_parameters_dict, non_tunable_parameters):
+    def set_parameters(self, tunable_parameters, non_tunable_parameters):
         # check valid input
-        if not isinstance(tunable_parameters_dict, dict):
+        if not isinstance(tunable_parameters, dict):
             raise TypeError("input tunable_parameters_dict must be with type Dictionary, please try again")
         if not isinstance(non_tunable_parameters, dict):
             raise TypeError("input non_tunable_parameters_dict must be with type Dictionary, please try again")
         
-        self.tunable_parameters_dict = tunable_parameters_dict
+        self.tunable_parameters_dict = tunable_parameters
         self.non_tunable_parameters_dict = non_tunable_parameters
 
 
@@ -76,7 +75,7 @@ class DevinMengTuner:
         self.test_X = test_X
         self.test_Y = test_Y
 
-    def  set_tuner(self, tuner_type):
+    def set_tuner(self, tuner_type):
         if tuner_type != 'Grid' and tuner_type != 'Random' and tuner_type != 'Bayesian':
             raise ValueError("input tunner_type must be Grid or Random or Bayesian, please try agian")
         
@@ -100,6 +99,8 @@ class DevinMengTuner:
             raise ValueError("test_X is not set, please set_data")
         if self.test_Y is None or self.test_Y.empty:
             raise ValueError("test_Y is not set, please set_data")
+        
+        self._make_dir()
         
         self._check_checkpoint()
         
@@ -205,11 +206,11 @@ class DevinMengTuner:
         print('Current Parameter Combination:')
         for key, value in self.curr_param_dict.items():
             print(f'{key}: {value}', end='; ')
-        print('')
+        print('\n')
         print('Current Performance Metrics:')
         for key, value in self.curr_metrics_dict.items():
             print(f'{key}: {value}', end='; ')
-        print('')
+        print('\n')
         print('Best Performance Metrics:')
         for key, value in self.best_metrics_dict.items():
             print(f'{key}: {value}', end ='; ')
@@ -286,4 +287,4 @@ class DevinMengTuner:
 
 
     def best_model_(self):
-        return self.best_model
+        return self.best_modelexlr
