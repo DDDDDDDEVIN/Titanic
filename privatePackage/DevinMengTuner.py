@@ -39,14 +39,14 @@ class DevinMengTuner:
         print("DevinMengTuner initialised")
 
 
-    def set_model(self, model, model_type):
+    def set_model(self, model, model_type, model_name):
         # check valid input
         if model_type != 'Regression' and model_type != 'Classification':
             raise ValueError("model_type must be Regression or Classification, please try again")
         
         self.model = copy.deepcopy(model)
         self.model_type = model_type
-        self.model_name = str(model)
+        self.model_name = model_name
 
 
     def set_parameters(self, tunable_parameters, non_tunable_parameters):
@@ -104,12 +104,25 @@ class DevinMengTuner:
         
         self._check_checkpoint()
         
+        if self.model_name == 'XGB':
+            self._xgb_tune()
+            return
+        if self.model_name == 'CB':
+            self._cb_tune()
+            return
+        if self.model_name == 'LB':
+            self._lb_tune()
+            return
+
         if self.tuner_type == 'Grid':
             self._grid_tune()
+            return
         if self.tuner_type == 'Random':
             self._random_tune()
+            return
         if self.tuner_type == 'Bayesian':
             self._bayesian_tune()
+            return
 
     def _grid_tune(self):
         # set non tunable parameters
@@ -193,7 +206,7 @@ class DevinMengTuner:
         elif curr_accuracy > self.best_metrics_dict['Accuracy']:
             self.best_metrics_dict = self.curr_metrics_dict.copy()
             self.best_param_dict = self.curr_param_dict.copy()
-            self.best_model = self.model
+            self.best_model = copy.deepcopy(self.model)
         self._print_evaluation()
         with open(self.cp_best_combo_path, 'w') as file:
             json.dump(self.best_param_dict, file)
@@ -287,4 +300,4 @@ class DevinMengTuner:
 
 
     def best_model_(self):
-        return self.best_modelexlr
+        return self.best_model
