@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile>
+  <diagram id="pipeline" name="Pipeline">
+    <mxGraphModel dx="1075" dy="530" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Data Source -->
+        <mxCell id="2" value="Data Source (CSV from Kaggle)" style="shape=rectangle;rounded=1;fillColor=#D4E6F1;strokeColor=#2980B9;" vertex="1" parent="1">
+          <mxGeometry x="50" y="50" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Data Preprocessing -->
+        <mxCell id="3" value="Data Preprocessing" style="shape=rectangle;rounded=1;fillColor=#E8DAEF;strokeColor=#8E44AD;" vertex="1" parent="1">
+          <mxGeometry x="50" y="150" width="200" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- Data Cleaning -->
+        <mxCell id="4" value="Data Cleaning: Fill Missing Values" style="shape=ellipse;fillColor=#FAD7A0;strokeColor=#D68910;" vertex="1" parent="1">
+          <mxGeometry x="300" y="150" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Feature Engineering -->
+        <mxCell id="5" value="Feature Engineering: SibSp+Parch, Extract Title, Cabin Level, Ticket Prefix" style="shape=ellipse;fillColor=#FAD7A0;strokeColor=#D68910;" vertex="1" parent="1">
+          <mxGeometry x="300" y="230" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Feature Selection -->
+        <mxCell id="6" value="Feature Selection: Permutation Importance, RFE" style="shape=ellipse;fillColor=#FAD7A0;strokeColor=#D68910;" vertex="1" parent="1">
+          <mxGeometry x="300" y="310" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Model Training -->
+        <mxCell id="7" value="Model Training: SVM, KNN, NN, RF, ET, AdaBoost, GB, XGBoost, Ensemble" style="shape=rectangle;rounded=1;fillColor=#A3E4D7;strokeColor=#1ABC9C;" vertex="1" parent="1">
+          <mxGeometry x="50" y="350" width="200" height="120" as="geometry" />
+        </mxCell>
+        
+        <!-- Model Selection -->
+        <mxCell id="8" value="Final Model: KNN (Selected)" style="shape=ellipse;fillColor=#A3E4D7;strokeColor=#1ABC9C;" vertex="1" parent="1">
+          <mxGeometry x="300" y="350" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Hyperparameter Tuning -->
+        <mxCell id="9" value="Hyperparameter Tuning: GridSearchCV, DevinMengTuner" style="shape=ellipse;fillColor=#A3E4D7;strokeColor=#1ABC9C;" vertex="1" parent="1">
+          <mxGeometry x="300" y="430" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Model Evaluation -->
+        <mxCell id="10" value="Model Evaluation: Accuracy Score" style="shape=rectangle;rounded=1;fillColor=#F5B7B1;strokeColor=#C0392B;" vertex="1" parent="1">
+          <mxGeometry x="50" y="500" width="200" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Train-Test Split -->
+        <mxCell id="11" value="Train-Test Split: 80% Train, 20% Test" style="shape=ellipse;fillColor=#F5B7B1;strokeColor=#C0392B;" vertex="1" parent="1">
+          <mxGeometry x="300" y="500" width="200" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Visualization -->
+        <mxCell id="12" value="Visualization: Permutation Importance Plot, SHAP Plot" style="shape=rectangle;rounded=1;fillColor=#F9E79F;strokeColor=#D4AC0D;" vertex="1" parent="1">
+          <mxGeometry x="50" y="600" width="200" height="80" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
